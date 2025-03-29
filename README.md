@@ -4,8 +4,8 @@ GraphQL Exercise
 
 ---
 
-<!-- [See The Project]()
+![gscimg](gsc.webp)
 
-![gscimg]()
+[Patika GraphQL Homework-1](https://academy.patika.dev/courses/graphql/odev-01)
 
-[Patika](https://academy.patika.dev/tr/@alpk) -->
+[Patika](https://academy.patika.dev/tr/@alpk)

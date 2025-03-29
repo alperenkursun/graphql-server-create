@@ -1,37 +1,109 @@
 import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
+import { events, locations, users, participants } from "./data.js";
 
-const typeDefs = `#graphql
-  # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
-
-  # This "Book" type defines the queryable fields for every book in our data source.
-  type Book {
-    title: String
-    author: String
+const typeDefs = `
+  type Event {
+    id: ID!
+    title: String!
+    desc: String!
+    date: String!
+    from: String!
+    to: String!
+    location_id: ID!
+    user_id: ID!
+    user: User!
+    location: Location!
+    participants: [Participant!]!
   }
 
-  # The "Query" type is special: it lists all of the available queries that
-  # clients can execute, along with the return type for each. In this
-  # case, the "books" query returns an array of zero or more Books (defined above).
+  type Location {
+    id: ID!
+    name: String!
+    desc: String!
+    lat: Float!
+    lng: Float!
+  }
+
+  type User {
+    id: ID!
+    username: String!
+    email: String!
+    events: [Event!]!
+  }
+
+  type Participant {
+    id: ID!
+    user_id: ID!
+    event_id: ID!
+  }
+
   type Query {
-    books: [Book]
+    # Event
+    events: [Event!]!
+    event(id: ID!): Event!
+
+    # Location
+    locations: [Location!]!
+    location(id: ID!): Location!
+
+    # User
+    users: [User!]!
+    user(id: ID!): User!
+
+    # Participant
+    participants: [Participant!]!
+    participant(id: ID!): Participant!
   }
 `;
 
-const books = [
-  {
-    title: "The Awakening",
-    author: "Kate Chopin",
-  },
-  {
-    title: "City of Glass",
-    author: "Paul Auster",
-  },
-];
-
 const resolvers = {
   Query: {
-    books: () => books,
+    // Event
+    events: () => events,
+    event: (_, args) => {
+      const event = events.find((event) => event.id === args.id);
+      if (!event) throw new Error("Event not found");
+      return event;
+    },
+
+    // Location
+    locations: () => locations,
+    location: (_, args) => {
+      const location = locations.find((location) => location.id === args.id);
+      if (!location) throw new Error("Location not found");
+      return location;
+    },
+
+    // User
+    users: () => users,
+    user: (_, args) => {
+      const user = users.find((user) => user.id === args.id);
+      if (!user) throw new Error("User not found");
+      return user;
+    },
+
+    // Participant
+    participants: () => participants,
+    participant: (_, args) => {
+      const participant = participants.find(
+        (participant) => participant.id === args.id
+      );
+      if (!participant) throw new Error("Participant not found");
+      return participant;
+    },
+  },
+
+  User: {
+    events: (parent) => events.filter((event) => event.user_id === parent.id),
+  },
+
+  Event: {
+    user: (parent) => users.find((user) => user.id === parent.user_id),
+    location: (parent) =>
+      locations.find((location) => location.id === parent.location_id),
+    participants: (parent) =>
+      participants.filter((participant) => participant.event_id === parent.id),
   },
 };
 
